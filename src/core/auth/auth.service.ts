@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/database/sql/entity/user.entity';
 
@@ -11,7 +11,13 @@ export class AuthService {
     return token;
   }
   decodetoken(token: string) {
-    const payload = this.jwtservice.verify<{ id: number; role: string }>(token);
-    return payload;
+    try {
+      const payload = this.jwtservice.verify<{ id: number; role: string }>(
+        token,
+      );
+      return payload;
+    } catch (error) {
+      throw new UnauthorizedException('User not authorized' + String(error));
+    }
   }
 }

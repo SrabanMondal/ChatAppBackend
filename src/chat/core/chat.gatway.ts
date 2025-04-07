@@ -18,8 +18,12 @@ import { UnauthorizedException } from '@nestjs/common';
 import { ChatService } from '../chat.service';
 import { LogService } from 'src/core/logger/logger.service';
 import { ConfigVal } from 'src/core/config/myconfig.service';
+import { AuthService } from 'src/core/auth/auth.service';
 
-@WebSocketGateway({ cors: { origin: '*' }, transports: ['websocket'] })
+@WebSocketGateway({
+  cors: { origin: process.env.FRONTEND || '*' },
+  transports: ['websocket'],
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -28,6 +32,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private chatService: ChatService,
     private readonly logger: LogService,
     private configservice: ConfigVal,
+    private authService: AuthService,
   ) {
     this.afterInit()
       .then(() => logger.log('Socket connected'))
@@ -47,38 +52,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
   async handleConnection(socket: AuthenticatedSocket) {
     //const userId = socket.data.user?.id;
-    const userId = parseInt(socket.handshake.query.userId);
-    this.logger.log(`userid: ${userId}`);
-    socket.data.user = { id: Number(userId) };
-    if (!userId) {
+    try {
+      const token = socket.handshake.query?.userId;
+      if (!token) {
+        socket.emit('exception', {
+          status: 'error',
+          message: 'Authentication token missing',
+          code: 'AUTH_MISSING',
+          timestamp: new Date().toISOString(),
+          data: null,
+        });
+        socket.disconnect();
+        return;
+      }
+      const userdata = this.authService.decodetoken(token || '');
+      const userId = userdata.id;
+      this.logger.log(`userid: ${userId}`);
+      socket.data.user = { id: Number(userId) };
+      if (!userId) {
+        socket.disconnect();
+        return;
+      }
+      const user = await this.chatService.getUser(userId);
+      if (!user) {
+        socket.disconnect();
+        throw new UnauthorizedException('User not exists');
+      }
+      if (socket.data.disconnectTimeout) {
+        clearTimeout(socket.data.disconnectTimeout);
+        socket.data.disconnectTimeout = null;
+      }
+      await socket.join(`user_${userId}`);
+      await this.redisService.setUserStatus(userId, 'online');
+      const friends = await this.chatService.getFriends(userId);
+      if (friends && friends.length > 0) {
+        friends.forEach((friend) =>
+          this.server.to(`user_${friend.id.toString()}`).emit('userStatus', {
+            userId,
+            status: 'online',
+          }),
+        );
+      }
+    } catch (error) {
+      this.logger.debug(String(error));
       socket.disconnect();
-      return;
-    }
-    const user = await this.chatService.getUser(userId);
-    if (!user) {
-      socket.disconnect();
-      throw new UnauthorizedException('User not exists');
-    }
-    if (socket.data.disconnectTimeout) {
-      clearTimeout(socket.data.disconnectTimeout);
-      socket.data.disconnectTimeout = null;
-    }
-    await socket.join(`user_${userId}`);
-    await this.redisService.setUserStatus(userId, 'online');
-    const friends = await this.chatService.getFriends(userId);
-    if (friends && friends.length > 0) {
-      friends.forEach((friend) =>
-        this.server.to(`user_${friend.id.toString()}`).emit('userStatus', {
-          userId,
-          status: 'online',
-        }),
-      );
-      const friendIds = friends.map((friend) => friend.id);
-      const friendStatuses = await this.redisService.getUserStatuses(friendIds);
-      const onlineFriends: UserData[] = friends.filter(
-        (friend, index) => friendStatuses[index] === 'online',
-      );
-      this.server.to(`user_${userId}`).emit('onlineFriends', onlineFriends);
     }
   }
   handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
@@ -124,6 +141,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         );
       });
     }, 5000);
+  }
+  @SubscribeMessage('getOnlineFriends')
+  async getOnlineFriends(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() payload: { userId: number },
+  ) {
+    const { userId } = payload;
+    if (!userId) return;
+    const friends = await this.chatService.getFriends(userId);
+    const friendIds = friends.map((friend) => friend.id);
+    const friendStatuses = await this.redisService.getUserStatuses(friendIds);
+    const onlineFriends: UserData[] = friends.filter(
+      (friend, index) => friendStatuses[index] === 'online',
+    );
+    this.server.to(`user_${userId}`).emit('onlineFriends', onlineFriends);
   }
 
   @SubscribeMessage('joinRoom')

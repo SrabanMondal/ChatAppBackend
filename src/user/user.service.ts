@@ -123,7 +123,9 @@ export class UserService {
     await this.userRepo.save(user);
   }
   async findbyId(userId: number) {
-    const user = await this.userModel.findOne({ id: userId });
+    const user = await this.userModel
+      .findOne({ id: userId })
+      .populate('friends');
     return user;
   }
   async findAll() {

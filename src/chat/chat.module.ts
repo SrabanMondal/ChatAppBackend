@@ -10,6 +10,7 @@ import { Message, MessageSchema } from 'src/database/mongo/message.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MyLogger } from 'src/core/logger/logger.module';
 import { MyConfig } from 'src/core/config/myconfig.module';
+import { AuthModule } from 'src/core/auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MyConfig } from 'src/core/config/myconfig.module';
     MyLogger,
     MyBull,
     MyConfig,
+    AuthModule,
   ],
   controllers: [ChatController],
   providers: [ChatService, ChatGateway, RedisService],

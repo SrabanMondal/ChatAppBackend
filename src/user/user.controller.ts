@@ -34,15 +34,7 @@ export class UserController {
   @Post('/register')
   async register(@Body() user: RegisterUserDto) {
     const createduser = await this.userService.createUser(user, 'user');
-    return {
-      id: createduser.id,
-      username: createduser.username,
-      email: createduser.email,
-      role: createduser.role,
-      createdAt: createduser.createdAt,
-      updatedAt: createduser.updatedAt,
-      message: 'OTP sent to your email ' + createduser.email,
-    };
+    return { message: 'Otp sent to ' + createduser.email, status: true };
   }
   @Post('/verifyotp')
   async updatepassword(@Body('otp') otp: string) {

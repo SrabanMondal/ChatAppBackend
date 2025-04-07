@@ -28,10 +28,17 @@ export class ChatService {
       );
     }
   }
-  async getUsers(name: string) {
+  async getUsers(name: string, id: number) {
     try {
+      const user = await this.userModel.findOne({ id: id });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      //make below users are those, whose friends array don't have user._id
       const users = await this.userModel.find({
+        _id: { $ne: user._id },
         name: { $regex: '^' + name, $options: 'i' },
+        friends: { $nin: [user._id] },
       });
       return users;
     } catch (error) {

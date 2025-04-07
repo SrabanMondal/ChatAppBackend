@@ -16,7 +16,7 @@ export type AuthenticatedSocket = Socket<
   CustomSocketData
 > & {
   handshake: {
-    query: CustomHandshakeQuery;
+    query?: CustomHandshakeQuery;
   };
 };
 import { IsInt, IsNotEmpty } from 'class-validator';

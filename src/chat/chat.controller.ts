@@ -29,9 +29,14 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get('search/:name')
-  async search(@Param('name') name: string) {
-    const users = await this.chatService.getUsers(name);
-    return users;
+  async search(
+    @Req() req: Request & { user: Omit<User, 'createdAt' | 'updatedAt'> },
+    @Param('name') name: string,
+  ) {
+    const id = req.user.id;
+    console.log(id, name);
+    const users = await this.chatService.getUsers(name, id);
+    return { users };
   }
 
   @Post('friends')
