@@ -19,7 +19,7 @@ import * as Joi from 'joi';
         //REDIS_URL: Joi.string().uri().required(),
         REDIS_PORT: Joi.number().default(6379),
         REDIS_HOST: Joi.string().default('localhost'),
-        //REDIS_PASSWORD: Joi.string().optional(),
+        REDIS_PASS: Joi.string().required(),
         MONGO_URI: Joi.string().required(),
       }),
       validationOptions: {

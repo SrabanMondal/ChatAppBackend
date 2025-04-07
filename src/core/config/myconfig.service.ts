@@ -16,6 +16,7 @@ export class ConfigVal {
     const redis_port = configService.get<number>('REDIS_PORT');
     const redis_host = configService.get<string>('REDIS_HOST');
     const mongo_uri = configService.get<string>('MONGO_URI');
+    const redis_pass = configService.get<string>('REDIS_PASS');
     if (!sqluri) {
       throw new BadRequestException('Missing sql URI');
     }
@@ -46,6 +47,9 @@ export class ConfigVal {
     if (!mongo_uri) {
       throw new BadRequestException('Missing mongo URI');
     }
+    if (!redis_pass) {
+      throw new BadRequestException('Missing redis password');
+    }
     this.config = {
       SQL_URI: sqluri,
       PORT: port,
@@ -57,6 +61,7 @@ export class ConfigVal {
       REDIS_HOST: redis_host,
       REDIS_PORT: redis_port,
       MONGO_URI: mongo_uri,
+      REDIS_PASS: redis_pass,
     };
   }
   getSqlUri(): string {
@@ -89,7 +94,10 @@ export class ConfigVal {
   getMongoUri(): string {
     return this.config.MONGO_URI;
   }
+  getRedisPass(): string {
+    return this.config.REDIS_PASS;
+  }
   getRedisUrl(): string {
-    return `redis://${this.config.REDIS_HOST}:${this.config.REDIS_PORT}`;
+    return `rediss://default:${this.config.REDIS_PASS}@${this.config.REDIS_HOST}:${this.config.REDIS_PORT}`;
   }
 }

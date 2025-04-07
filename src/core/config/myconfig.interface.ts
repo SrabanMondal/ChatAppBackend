@@ -9,4 +9,5 @@ export interface MyConfig {
   REDIS_HOST: string;
   REDIS_PORT: number;
   MONGO_URI: string;
+  REDIS_PASS: string;
 }

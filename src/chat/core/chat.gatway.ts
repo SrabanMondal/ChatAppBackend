@@ -39,9 +39,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .catch(() => logger.log('Socket errror'));
   }
   async afterInit() {
-    const pubClient = createClient({ url: this.configservice.getRedisUrl() });
-    const subClient = pubClient.duplicate();
     try {
+      const pubClient = createClient({ url: this.configservice.getRedisUrl() });
+      const subClient = pubClient.duplicate();
       await Promise.all([pubClient.connect(), subClient.connect()]);
       this.server.adapter(createAdapter(pubClient, subClient));
       this.logger.log('Redis adapter initialized successfully');

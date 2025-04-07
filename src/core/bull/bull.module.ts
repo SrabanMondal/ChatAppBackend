@@ -20,6 +20,7 @@ import { Message, MessageSchema } from 'src/database/mongo/message.schema';
         redis: {
           host: configVal.getRedisHost(),
           port: configVal.getRedisPort(),
+          password: configVal.getRedisPass(),
         },
       }),
     }),
