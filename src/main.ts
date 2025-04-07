@@ -33,7 +33,7 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   });
-  await app.listen(port ?? 3000);
+  await app.listen(port ?? 10000);
   console.log(`Server running on port ${port}`);
 }
 bootstrap()
