@@ -75,7 +75,7 @@ export class ChatService {
         { roomId },
         {
           roomId,
-          participants: { $addToSet: { $each: [user._id, receiver._id] } },
+          participants: [user._id, receiver._id],
           updatedAt: new Date(),
         },
         {
