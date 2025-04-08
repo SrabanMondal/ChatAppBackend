@@ -32,7 +32,7 @@ export declare class ChatService {
         _id: import("mongoose").Types.ObjectId;
     }>)[]>;
     getFriends(userId: number): Promise<UserData[]>;
-    getorCreateRoom(roomId: string, userId: number, receiverId: number): Promise<(import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Room> & Room & {
+    getorCreateRoom(roomId: string, userId: number, receiverId: number): Promise<import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Room> & Room & {
         _id: import("mongoose").Types.ObjectId;
     } & {
         __v: number;
@@ -42,21 +42,7 @@ export declare class ChatService {
         __v: number;
     } & Required<{
         _id: import("mongoose").Types.ObjectId;
-    }>) | (import("mongoose").Document<unknown, {}, import("mongoose").MergeType<import("mongoose").Document<unknown, {}, Room> & Room & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
-        __v: number;
-    }, {
-        participants: UserData[];
-    }>> & Omit<import("mongoose").Document<unknown, {}, Room> & Room & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
-        __v: number;
-    }, "participants"> & {
-        participants: UserData[];
-    } & Required<{
-        _id: import("mongoose").Types.ObjectId;
-    }>)>;
+    }>>;
     getPastMessages(roomId: string): Promise<(import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Message> & Message & {
         _id: import("mongoose").Types.ObjectId;
     } & {

@@ -1,9 +1,13 @@
-import { Socket } from 'socket.io';
-import { Catch, ArgumentsHost } from '@nestjs/common';
+import { Catch, ArgumentsHost, Logger } from '@nestjs/common';
 import { BaseWsExceptionFilter } from '@nestjs/websockets';
 import { WsException } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 
 export type WsClient = Socket;
+
+export interface WsClientData {
+  [key: string]: any;
+}
 
 export interface WsErrorResponse<T = any> {
   status: 'error';
@@ -12,53 +16,52 @@ export interface WsErrorResponse<T = any> {
   timestamp: string;
   data: T | null;
 }
-export interface WsClientData {
-  [key: string]: any;
-}
 
-@Catch()
+@Catch(WsException, Error)
 export class WsExceptionFilter<
   T extends WsClientData = WsClientData,
 > extends BaseWsExceptionFilter {
-  catch(exception: any, host: ArgumentsHost): void {
+  private readonly logger = new Logger(WsExceptionFilter.name);
+
+  catch(exception: WsException | Error, host: ArgumentsHost): void {
     const client = host.switchToWs().getClient<WsClient>();
-    //const data = host.switchToWs().getData<T>();
+    const data = host.switchToWs().getData<T>();
 
     const errorResponse: WsErrorResponse<T> = {
       status: 'error',
       message: '',
       code: '',
       timestamp: new Date().toISOString(),
-      data: null,
+      data: data || null,
     };
 
-    // Type-safe exception handling
-    switch (true) {
-      case exception instanceof WsException:
-        errorResponse.message = exception.getError() as string;
-        errorResponse.code = 'WS_ERROR';
-        break;
-
-      case exception instanceof Error:
-        errorResponse.message = exception.message;
-        errorResponse.code = 'GENERIC_ERROR';
-        break;
-
-      default:
-        errorResponse.message = 'Internal server error';
-        errorResponse.code = 'INTERNAL_SERVER_ERROR';
+    if (exception instanceof WsException) {
+      errorResponse.message = exception.getError() as string;
+      errorResponse.code = 'WS_ERROR';
+    } else if (exception instanceof Error) {
+      errorResponse.message = exception.message;
+      errorResponse.code = 'GENERIC_ERROR';
+      this.logger.error(
+        `WebSocket error: ${exception.message}`,
+        exception.stack,
+      );
+    } else {
+      errorResponse.message = 'Internal server error';
+      errorResponse.code = 'INTERNAL_SERVER_ERROR';
+      this.logger.error('Unknown WebSocket error', exception);
     }
 
-    // Type assertion for the client emit method
     if ('emit' in client) {
       (client as Socket).emit('exception', errorResponse);
     } else {
+      this.logger.warn(
+        'Non-Socket.IO client detected, sending raw WebSocket message',
+      );
       (client as WebSocket).send(
-        JSON.stringify({
-          event: 'exception',
-          data: errorResponse,
-        }),
+        JSON.stringify({ event: 'exception', data: errorResponse }),
       );
     }
+
+    client.disconnect();
   }
 }

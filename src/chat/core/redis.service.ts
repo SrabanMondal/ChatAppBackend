@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createClient } from 'redis';
+import { ConfigVal } from 'src/core/config/myconfig.service';
 import { Message, MessageDocument } from 'src/database/mongo/message.schema';
 
 @Injectable()
@@ -9,9 +10,10 @@ export class RedisService {
   private client: ReturnType<typeof createClient>;
   constructor(
     @InjectModel(Message.name) private messagemodel: Model<MessageDocument>,
+    private myconfig: ConfigVal,
   ) {
     this.client = createClient({
-      url: 'redis://localhost:6379',
+      url: myconfig.getRedisUrl(),
     });
     this.client
       .connect()

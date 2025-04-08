@@ -9,6 +9,7 @@ import { LogService } from 'src/core/logger/logger.service';
 import { Message, MessageDocument } from 'src/database/mongo/message.schema';
 import { Room, RoomDocuement } from 'src/database/mongo/room.schema';
 import { UserData, UserDocument } from 'src/database/mongo/user.schema';
+import { MongoServerError } from 'typeorm';
 
 @Injectable()
 export class ChatService {
@@ -63,23 +64,42 @@ export class ChatService {
     }
   }
   async getorCreateRoom(roomId: string, userId: number, receiverId: number) {
-    // this.logger.debug("GetOrCreateRoom");
-    const room = await this.roomModel
-      .findOne({ roomId: roomId })
-      .populate<{ participants: UserData[] }>('participants');
-    const user = await this.userModel.findOne({ id: userId });
-    const receiver = await this.userModel.findOne({ id: receiverId });
+    this.logger.debug(`GetOrCreateRoom for roomId: ${roomId}`);
+    const user = await this.userModel.findOne({ id: userId }).lean();
+    const receiver = await this.userModel.findOne({ id: receiverId }).lean();
     if (!user || !receiver) {
       throw new InternalServerErrorException('Invalid users');
     }
-    if (!room) {
-      const newRoom = await this.roomModel.create({
-        roomId: roomId,
-        participants: [user?._id, receiver._id],
+    const room = await this.roomModel
+      .findOneAndUpdate(
+        { roomId },
+        {
+          roomId,
+          participants: { $addToSet: { $each: [user._id, receiver._id] } },
+          updatedAt: new Date(), // Track last update
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true, // Apply defaults on new insert
+          populate: { path: 'participants', model: 'User' },
+        },
+      )
+      .catch((error) => {
+        this.logger.error(
+          `Failed to find or create room ${roomId}:`,
+          String(error),
+        );
+        if (error instanceof MongoServerError && error?.code === 11000) {
+          return this.roomModel.findOne({ roomId }).populate('participants');
+        }
+        throw new InternalServerErrorException('Room operation failed');
       });
-      // console.log(newRoom);
-      return newRoom;
+
+    if (!room) {
+      throw new InternalServerErrorException('Room not found after operation');
     }
+
     return room;
   }
   async getPastMessages(roomId: string) {

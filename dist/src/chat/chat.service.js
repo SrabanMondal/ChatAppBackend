@@ -20,6 +20,7 @@ const logger_service_1 = require("../core/logger/logger.service");
 const message_schema_1 = require("../database/mongo/message.schema");
 const room_schema_1 = require("../database/mongo/room.schema");
 const user_schema_1 = require("../database/mongo/user.schema");
+const typeorm_1 = require("typeorm");
 let ChatService = class ChatService {
     userModel;
     messageModel;
@@ -72,20 +73,32 @@ let ChatService = class ChatService {
         }
     }
     async getorCreateRoom(roomId, userId, receiverId) {
-        const room = await this.roomModel
-            .findOne({ roomId: roomId })
-            .populate('participants');
-        const user = await this.userModel.findOne({ id: userId });
-        const receiver = await this.userModel.findOne({ id: receiverId });
+        this.logger.debug(`GetOrCreateRoom for roomId: ${roomId}`);
+        const user = await this.userModel.findOne({ id: userId }).lean();
+        const receiver = await this.userModel.findOne({ id: receiverId }).lean();
         if (!user || !receiver) {
             throw new common_1.InternalServerErrorException('Invalid users');
         }
+        const room = await this.roomModel
+            .findOneAndUpdate({ roomId }, {
+            roomId,
+            participants: { $addToSet: { $each: [user._id, receiver._id] } },
+            updatedAt: new Date(),
+        }, {
+            upsert: true,
+            new: true,
+            setDefaultsOnInsert: true,
+            populate: { path: 'participants', model: 'User' },
+        })
+            .catch((error) => {
+            this.logger.error(`Failed to find or create room ${roomId}:`, String(error));
+            if (error instanceof typeorm_1.MongoServerError && error?.code === 11000) {
+                return this.roomModel.findOne({ roomId }).populate('participants');
+            }
+            throw new common_1.InternalServerErrorException('Room operation failed');
+        });
         if (!room) {
-            const newRoom = await this.roomModel.create({
-                roomId: roomId,
-                participants: [user?._id, receiver._id],
-            });
-            return newRoom;
+            throw new common_1.InternalServerErrorException('Room not found after operation');
         }
         return room;
     }

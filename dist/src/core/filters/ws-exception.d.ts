@@ -1,7 +1,11 @@
-import { Socket } from 'socket.io';
 import { ArgumentsHost } from '@nestjs/common';
 import { BaseWsExceptionFilter } from '@nestjs/websockets';
+import { WsException } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 export type WsClient = Socket;
+export interface WsClientData {
+    [key: string]: any;
+}
 export interface WsErrorResponse<T = any> {
     status: 'error';
     message: string;
@@ -9,9 +13,7 @@ export interface WsErrorResponse<T = any> {
     timestamp: string;
     data: T | null;
 }
-export interface WsClientData {
-    [key: string]: any;
-}
 export declare class WsExceptionFilter<T extends WsClientData = WsClientData> extends BaseWsExceptionFilter {
-    catch(exception: any, host: ArgumentsHost): void;
+    private readonly logger;
+    catch(exception: WsException | Error, host: ArgumentsHost): void;
 }

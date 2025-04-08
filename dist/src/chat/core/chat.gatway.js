@@ -23,6 +23,7 @@ const chat_service_1 = require("../chat.service");
 const logger_service_1 = require("../../core/logger/logger.service");
 const myconfig_service_1 = require("../../core/config/myconfig.service");
 const auth_service_1 = require("../../core/auth/auth.service");
+const ws_exception_1 = require("../../core/filters/ws-exception");
 let ChatGateway = class ChatGateway {
     redisService;
     chatService;
@@ -331,6 +332,7 @@ exports.ChatGateway = ChatGateway = __decorate([
         cors: { origin: process.env.FRONTEND || '*' },
         transports: ['websocket'],
     }),
+    (0, common_1.UseFilters)(new ws_exception_1.WsExceptionFilter()),
     __metadata("design:paramtypes", [redis_service_1.RedisService,
         chat_service_1.ChatService,
         logger_service_1.LogService,

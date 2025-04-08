@@ -6,7 +6,6 @@ const myconfig_service_1 = require("./core/config/myconfig.service");
 const globalvalidations_1 = require("./core/validation/globalvalidations");
 const globalexception_1 = require("./core/filters/globalexception");
 const common_1 = require("@nestjs/common");
-const ws_exception_1 = require("./core/filters/ws-exception");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const config = app.get(myconfig_service_1.ConfigVal);
@@ -25,7 +24,6 @@ async function bootstrap() {
     });
     app.useGlobalPipes((0, globalvalidations_1.globalvalidationPipe)(config));
     app.useGlobalFilters(new globalexception_1.GlobalException(app.get(core_1.HttpAdapterHost)));
-    app.useGlobalFilters(new ws_exception_1.WsExceptionFilter());
     app.enableShutdownHooks();
     app.enableVersioning({
         type: common_1.VersioningType.URI,

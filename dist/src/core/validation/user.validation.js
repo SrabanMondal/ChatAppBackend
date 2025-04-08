@@ -26,6 +26,7 @@ let ValidateUserPipe = class ValidateUserPipe {
         const { email, password } = value;
         const user = await this.userRepository.findOneBy({ email: email });
         if (!user) {
+            console.log('user not found');
             throw new common_1.NotFoundException('User not found');
         }
         return { user, password };

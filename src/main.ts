@@ -5,7 +5,7 @@ import { ConfigVal } from './core/config/myconfig.service';
 import { globalvalidationPipe } from './core/validation/globalvalidations';
 import { GlobalException } from './core/filters/globalexception';
 import { VersioningType } from '@nestjs/common';
-import { WsClient, WsExceptionFilter } from './core/filters/ws-exception';
+//import { WsClient, WsExceptionFilter } from './core/filters/ws-exception';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,7 +28,7 @@ async function bootstrap() {
   });
   app.useGlobalPipes(globalvalidationPipe(config));
   app.useGlobalFilters(new GlobalException(app.get(HttpAdapterHost)));
-  app.useGlobalFilters(new WsExceptionFilter<WsClient>());
+  //app.useGlobalFilters(new WsExceptionFilter<WsClient>());
   app.enableShutdownHooks();
   app.enableVersioning({
     type: VersioningType.URI,

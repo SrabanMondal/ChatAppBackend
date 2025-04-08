@@ -17,14 +17,17 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const redis_1 = require("redis");
+const myconfig_service_1 = require("../../core/config/myconfig.service");
 const message_schema_1 = require("../../database/mongo/message.schema");
 let RedisService = class RedisService {
     messagemodel;
+    myconfig;
     client;
-    constructor(messagemodel) {
+    constructor(messagemodel, myconfig) {
         this.messagemodel = messagemodel;
+        this.myconfig = myconfig;
         this.client = (0, redis_1.createClient)({
-            url: 'redis://localhost:6379',
+            url: myconfig.getRedisUrl(),
         });
         this.client
             .connect()
@@ -81,6 +84,7 @@ exports.RedisService = RedisService;
 exports.RedisService = RedisService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(message_schema_1.Message.name)),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        myconfig_service_1.ConfigVal])
 ], RedisService);
 //# sourceMappingURL=redis.service.js.map

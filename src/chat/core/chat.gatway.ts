@@ -14,16 +14,18 @@ import { createClient } from 'redis';
 import { RedisService } from './redis.service';
 import { UserData } from 'src/database/mongo/user.schema';
 import { Message, MessageDocument } from 'src/database/mongo/message.schema';
-import { UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException, UseFilters } from '@nestjs/common';
 import { ChatService } from '../chat.service';
 import { LogService } from 'src/core/logger/logger.service';
 import { ConfigVal } from 'src/core/config/myconfig.service';
 import { AuthService } from 'src/core/auth/auth.service';
+import { WsExceptionFilter } from 'src/core/filters/ws-exception';
 
 @WebSocketGateway({
   cors: { origin: process.env.FRONTEND || '*' },
   transports: ['websocket'],
 })
+@UseFilters(new WsExceptionFilter())
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;

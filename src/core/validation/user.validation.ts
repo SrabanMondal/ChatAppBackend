@@ -14,6 +14,7 @@ export class ValidateUserPipe implements PipeTransform {
     const { email, password } = value;
     const user = await this.userRepository.findOneBy({ email: email });
     if (!user) {
+      console.log('user not found');
       throw new NotFoundException('User not found');
     }
     return { user, password };
