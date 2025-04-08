@@ -25,10 +25,12 @@ let EmailProcessor = class EmailProcessor {
         this.emailService = emailService;
     }
     async queueEmail(email, username) {
+        console.log('Queue welcome mail');
         await this.emailQueue.add('send_welcome_email', { email, username }, { attempts: 3, backoff: 5000 });
     }
     async handleSendWelcomeEmail(job) {
         try {
+            console.log('Sending welcome mail');
             await this.emailService.sendMail(job.data.email, 'Welcome to ChatNest!', `Hi ${job.data.username},\n\nWelcome to ChatNest! We're excited to have you on board.`, `<h1>Welcome, ${job.data.username}!</h1><p>Thanks for joining ChatNest! We're excited to have you on board.</p>`);
         }
         catch (error) {

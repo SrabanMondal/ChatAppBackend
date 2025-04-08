@@ -73,6 +73,7 @@ let UserService = class UserService {
             isVerified: false,
         };
         const createduser = queryRunner.manager.create(user_entity_1.User, USER);
+        this.logger.debug('User created and saving');
         await queryRunner.manager.save(user_entity_1.User, createduser);
         try {
             await this.emailService.sendMail(USER.email, 'Verification OTP', 'Your verification otp is :' + otp + '. Valid for 10 minutes');
@@ -93,9 +94,12 @@ let UserService = class UserService {
             throw new common_1.UnauthorizedException('Invalid or Expired OTP');
         }
         user.isVerified = true;
+        this.logger.debug('User verified and sending welcome mail');
         await this.emailQueue.queueEmail(user.email, user.username);
         await this.userRepo.save(user);
+        this.logger.debug('User creeated and saving to mongodb');
         await this.mongodata.addMongoUser(user.email, user.username);
+        this.logger.debug('saved');
     }
     async signin(user, password) {
         const isPasswordValid = await bcrypt.compare(password, user.password);

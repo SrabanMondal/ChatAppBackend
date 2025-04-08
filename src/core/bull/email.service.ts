@@ -12,6 +12,7 @@ export class EmailProcessor {
     private emailService: EmailService,
   ) {}
   async queueEmail(email: string, username: string) {
+    console.log('Queue welcome mail');
     await this.emailQueue.add(
       'send_welcome_email',
       { email, username },
@@ -21,6 +22,7 @@ export class EmailProcessor {
   @Process('send_welcome_email')
   async handleSendWelcomeEmail(job: Job<{ email: string; username: string }>) {
     try {
+      console.log('Sending welcome mail');
       await this.emailService.sendMail(
         job.data.email,
         'Welcome to ChatNest!',

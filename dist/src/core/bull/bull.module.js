@@ -33,6 +33,7 @@ exports.MyBull = MyBull = __decorate([
                         host: configVal.getRedisHost(),
                         port: configVal.getRedisPort(),
                         password: configVal.getRedisPass(),
+                        tls: {},
                     },
                 }),
             }),

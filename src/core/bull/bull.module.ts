@@ -21,6 +21,7 @@ import { Message, MessageSchema } from 'src/database/mongo/message.schema';
           host: configVal.getRedisHost(),
           port: configVal.getRedisPort(),
           password: configVal.getRedisPass(),
+          tls: {},
         },
       }),
     }),
