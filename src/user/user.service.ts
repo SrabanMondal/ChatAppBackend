@@ -38,29 +38,29 @@ export class UserService {
     const queryRunner = this.datsource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    const newuser = { ...user, role: role };
-    const isUserExists = await this.userRepo.findOneBy({ email: user.email });
-    if (isUserExists) {
-      throw new ConflictException('User already exists');
-    }
-    const isUserwithNameExists = await this.userRepo.findOneBy({
-      username: user.username,
-    });
-    if (isUserwithNameExists) {
-      throw new ConflictException('User with same name already exists');
-    }
-    const otp = crypto.randomInt(100000, 999999).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-    const USER = {
-      ...newuser,
-      verificationOtp: otp,
-      verificationExpires: otpExpires,
-      isVerified: false,
-    };
-    const createduser = queryRunner.manager.create(User, USER);
-    this.logger.debug('User created and saving');
-    await queryRunner.manager.save(User, createduser);
     try {
+      const newuser = { ...user, role: role };
+      const isUserExists = await this.userRepo.findOneBy({ email: user.email });
+      if (isUserExists) {
+        throw new ConflictException('User already exists');
+      }
+      const isUserwithNameExists = await this.userRepo.findOneBy({
+        username: user.username,
+      });
+      if (isUserwithNameExists) {
+        throw new ConflictException('User with same name already exists');
+      }
+      const otp = crypto.randomInt(100000, 999999).toString();
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+      const USER = {
+        ...newuser,
+        verificationOtp: otp,
+        verificationExpires: otpExpires,
+        isVerified: false,
+      };
+      const createduser = queryRunner.manager.create(User, USER);
+      this.logger.debug('User created and saving');
+      await queryRunner.manager.save(User, createduser);
       await this.emailService.sendMail(
         USER.email,
         'Verification OTP',
@@ -68,15 +68,16 @@ export class UserService {
       );
       this.logger.log(`Verification email sent to ${user.email}`);
       await queryRunner.commitTransaction();
+      return createduser;
     } catch (error) {
       this.logger.error(`Failed to send verification email to ${user.email}`);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(
         'Failed to send verification email. Error: ' + error,
       );
+    } finally {
+      await queryRunner.release();
     }
-    await queryRunner.release();
-    return createduser;
   }
   async verifyOtp(otp: string) {
     const user = await this.userRepo.findOneBy({ verificationOtp: otp });
