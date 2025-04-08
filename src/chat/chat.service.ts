@@ -76,13 +76,13 @@ export class ChatService {
         {
           roomId,
           participants: { $addToSet: { $each: [user._id, receiver._id] } },
-          updatedAt: new Date(), // Track last update
+          updatedAt: new Date(),
         },
         {
           upsert: true,
           new: true,
-          setDefaultsOnInsert: true, // Apply defaults on new insert
-          populate: { path: 'participants', model: 'User' },
+          setDefaultsOnInsert: true,
+          populate: { path: 'participants', model: 'UserData' },
         },
       )
       .catch((error) => {

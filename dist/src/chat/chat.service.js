@@ -88,7 +88,7 @@ let ChatService = class ChatService {
             upsert: true,
             new: true,
             setDefaultsOnInsert: true,
-            populate: { path: 'participants', model: 'User' },
+            populate: { path: 'participants', model: 'UserData' },
         })
             .catch((error) => {
             this.logger.error(`Failed to find or create room ${roomId}:`, String(error));
