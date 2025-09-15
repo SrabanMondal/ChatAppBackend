@@ -159,7 +159,7 @@ modern UI, delivering both functionality and aesthetics.
 
 ```bash
 git clone https://github.com/SrabanMondal/ChatAppBackend
-cd chat-backend
+cd ChatAppBackend
 ```
 
 2. **Install Dependencies**:
@@ -168,13 +168,20 @@ cd chat-backend
 npm install
 ```
 
-3. **Environment Configuration**: Create `.env` in the root:
+3. **Environment Configuration**: Create `.env` in the root like below:
 
-```bash
-PORT=3000
-JWT_SECRET=your-secret-key
-MONGO_URI=mongodb://localhost:27017/chatdb
-REDIS_URL=redis://localhost:6379
+```js
+  SQL_URI: string;
+  PORT: number;
+  NODE_ENV: 'DEV' | 'PROD';
+  FRONTEND: string;
+  JWT: string;
+  EMAIL_USER: string;
+  EMAIL_PASS: string;
+  REDIS_HOST: string;
+  REDIS_PORT: number;
+  MONGO_URI: string;
+  REDIS_PASS: string;
 ```
 
 4. **Start Services**:
