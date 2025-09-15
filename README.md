@@ -272,7 +272,7 @@ npm run start:prod # Production mode
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+GNU License - see [LICENSE](LICENSE) for details.
 
 ## Contact
 
