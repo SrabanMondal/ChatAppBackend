@@ -12,6 +12,8 @@ caching, ensuring a seamless experience even at scale. With a focus on
 **TypeScript** for type safety and a modular architecture, this project
 is designed for maintainability and extensibility.
 
+**Frontend** - *https://github.com/SrabanMondal/chat-frontend*
+
 Key highlights: - **Real-Time Messaging**: Instant message delivery with
 read receipts and typing indicators. - **Secure Authentication**:
 JWT-based authentication with token validation for HTTP and WebSocket
