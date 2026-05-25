@@ -14,12 +14,17 @@ is designed for maintainability and extensibility.
 
 **Frontend** - *https://github.com/SrabanMondal/chat-frontend*
 
-Key highlights: - **Real-Time Messaging**: Instant message delivery with
-read receipts and typing indicators. - **Secure Authentication**:
+Key highlights: 
+- **Real-Time Messaging**: Instant message delivery with
+read receipts and typing indicators.
+- **Secure Authentication**:
 JWT-based authentication with token validation for HTTP and WebSocket
-endpoints. - **User Profiles**: Rich profile management with name,
-profile picture, and friend lists. - **Scalable Design**: Redis-powered
-status tracking and MongoDB for flexible data modeling. - **Elegant
+endpoints.
+- **User Profiles**: Rich profile management with name,
+profile picture, and friend lists.
+- **Scalable Design**: Redis-powered
+status tracking and MongoDB for flexible data modeling.
+- **Elegant
 Error Handling**: Custom WebSocket filters to handle unauthenticated
 connections gracefully.
 
